@@ -20,6 +20,8 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
   const [isShuffle, setIsShuffle] = useState(false);
   const [progress, setProgress] = useState(0.3); // 0 to 1
   const [volume, setVolume] = useState(0.8); // 0 to 1
+  const [isSeekingProgress, setIsSeekingProgress] = useState(false);
+  const [isSeekingVolume, setIsSeekingVolume] = useState(false);
 
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
@@ -45,6 +47,36 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
 
   const totalDuration = 237; // 3:57 in seconds
   const currentTime = totalDuration * progress;
+
+  const handleProgressChange = (value: number) => {
+    setProgress(value);
+    // In a real app, you would seek to this position in the audio
+    console.log('Seeking to:', formatTime(totalDuration * value));
+  };
+
+  const handleVolumeChange = (value: number) => {
+    setVolume(value);
+    // In a real app, you would set the audio volume
+    console.log('Volume changed to:', Math.round(value * 100) + '%');
+  };
+
+  const handleProgressSlidingStart = () => {
+    setIsSeekingProgress(true);
+    // In a real app, you might pause playback during seeking
+  };
+
+  const handleProgressSlidingComplete = () => {
+    setIsSeekingProgress(false);
+    // In a real app, you would resume playback and seek to the new position
+  };
+
+  const handleVolumeSlidingStart = () => {
+    setIsSeekingVolume(true);
+  };
+
+  const handleVolumeSlidingComplete = () => {
+    setIsSeekingVolume(false);
+  };
 
   const animatedIconStyle = useAnimatedStyle(() => {
     return {
@@ -89,7 +121,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
 
       <View style={styles.infoContainer}>
         <View style={styles.titleRow}>
-          <View>
+          <View style={styles.titleContainer}>
             <Text style={styles.songTitle}>Midnight City</Text>
             <Text style={styles.artistName}>M83</Text>
           </View>
@@ -105,10 +137,13 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
         <View style={styles.progressContainer}>
           <Slider
             value={progress}
-            onValueChange={setProgress}
+            onValueChange={handleProgressChange}
+            onSlidingStart={handleProgressSlidingStart}
+            onSlidingComplete={handleProgressSlidingComplete}
             minimumTrackTintColor={Colors.primary}
             maximumTrackTintColor={Colors.border}
             thumbTintColor={Colors.text}
+            style={styles.progressSlider}
           />
           <View style={styles.timeContainer}>
             <Text style={styles.timeText}>{formatTime(currentTime)}</Text>
@@ -154,12 +189,15 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
           <Volume2 size={18} color={Colors.textSecondary} />
           <Slider
             value={volume}
-            onValueChange={setVolume}
+            onValueChange={handleVolumeChange}
+            onSlidingStart={handleVolumeSlidingStart}
+            onSlidingComplete={handleVolumeSlidingComplete}
             minimumTrackTintColor={Colors.primary}
             maximumTrackTintColor={Colors.border}
             thumbTintColor={Colors.text}
             style={styles.volumeSlider}
           />
+          <Text style={styles.volumeText}>{Math.round(volume * 100)}%</Text>
         </View>
       </View>
     </Animated.View>
@@ -221,6 +259,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  titleContainer: {
+    flex: 1,
+    marginRight: 16,
+  },
   songTitle: {
     color: Colors.text,
     fontSize: 22,
@@ -234,20 +276,26 @@ const styles = StyleSheet.create({
   progressContainer: {
     marginBottom: 30,
   },
+  progressSlider: {
+    marginHorizontal: -10, // Extend touch area
+  },
   timeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 8,
+    paddingHorizontal: 4,
   },
   timeText: {
     color: Colors.textSecondary,
     fontSize: 12,
+    fontWeight: '500',
   },
   controlsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 40,
+    paddingHorizontal: 10,
   },
   secondaryButton: {
     padding: 10,
@@ -262,15 +310,28 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   volumeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    paddingHorizontal: 4,
   },
   volumeSlider: {
     flex: 1,
-    marginLeft: 10,
+    marginHorizontal: 12,
+  },
+  volumeText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '500',
+    minWidth: 35,
+    textAlign: 'right',
   },
 });
 

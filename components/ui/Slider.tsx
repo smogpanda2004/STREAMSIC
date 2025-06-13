@@ -1,126 +1,185 @@
 import React from 'react';
-import { View, StyleSheet, PanResponder, GestureResponderEvent, LayoutChangeEvent } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { View, StyleSheet, PanResponder, Dimensions } from 'react-native';
+import Animated, { 
+  useAnimatedStyle, 
+  useSharedValue, 
+  withTiming,
+  runOnJS
+} from 'react-native-reanimated';
 import Colors from '@/constants/Colors';
 
 interface SliderProps {
   value: number; // 0 to 1
   onValueChange: (value: number) => void;
+  onSlidingStart?: () => void;
+  onSlidingComplete?: () => void;
   minimumTrackTintColor?: string;
   maximumTrackTintColor?: string;
   thumbTintColor?: string;
   style?: any;
+  disabled?: boolean;
 }
 
 const Slider: React.FC<SliderProps> = ({
   value,
   onValueChange,
+  onSlidingStart,
+  onSlidingComplete,
   minimumTrackTintColor = Colors.primary,
   maximumTrackTintColor = Colors.border,
   thumbTintColor = Colors.text,
   style,
+  disabled = false,
 }) => {
-  const [width, setWidth] = React.useState(0);
-  const thumbSize = 12;
-  const activeThumbSize = 16;
-  const thumbAnim = useSharedValue(thumbSize);
-  const isTracking = React.useRef(false);
+  const [containerWidth, setContainerWidth] = React.useState(0);
+  const thumbSize = useSharedValue(12);
+  const isDragging = React.useRef(false);
+  const currentValue = React.useRef(value);
 
-  const calculatePosition = (x: number) => {
-    const newValue = Math.max(0, Math.min(1, x / width));
-    onValueChange(newValue);
+  // Update current value when prop changes
+  React.useEffect(() => {
+    if (!isDragging.current) {
+      currentValue.current = value;
+    }
+  }, [value]);
+
+  const calculateValueFromPosition = (x: number) => {
+    'worklet';
+    if (containerWidth === 0) return 0;
+    const newValue = Math.max(0, Math.min(1, x / containerWidth));
+    return newValue;
   };
 
   const panResponder = React.useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        isTracking.current = true;
-        thumbAnim.value = withTiming(activeThumbSize, { duration: 150 });
+      onStartShouldSetPanResponder: () => !disabled,
+      onMoveShouldSetPanResponder: () => !disabled,
+      
+      onPanResponderGrant: (evt) => {
+        if (disabled) return;
+        
+        isDragging.current = true;
+        thumbSize.value = withTiming(16, { duration: 150 });
+        
+        if (onSlidingStart) {
+          onSlidingStart();
+        }
+
+        // Calculate initial position
+        const x = evt.nativeEvent.locationX;
+        const newValue = calculateValueFromPosition(x);
+        currentValue.current = newValue;
+        onValueChange(newValue);
       },
-      onPanResponderMove: (_, gestureState) => {
-        calculatePosition(gestureState.moveX - gestureState.x0);
+      
+      onPanResponderMove: (evt, gestureState) => {
+        if (disabled) return;
+        
+        const x = evt.nativeEvent.locationX;
+        const newValue = calculateValueFromPosition(x);
+        currentValue.current = newValue;
+        onValueChange(newValue);
       },
+      
       onPanResponderRelease: () => {
-        isTracking.current = false;
-        thumbAnim.value = withTiming(thumbSize, { duration: 150 });
+        if (disabled) return;
+        
+        isDragging.current = false;
+        thumbSize.value = withTiming(12, { duration: 150 });
+        
+        if (onSlidingComplete) {
+          onSlidingComplete();
+        }
       },
+      
       onPanResponderTerminate: () => {
-        isTracking.current = false;
-        thumbAnim.value = withTiming(thumbSize, { duration: 150 });
+        if (disabled) return;
+        
+        isDragging.current = false;
+        thumbSize.value = withTiming(12, { duration: 150 });
+        
+        if (onSlidingComplete) {
+          onSlidingComplete();
+        }
       },
     })
   ).current;
 
-  const onLayout = (event: LayoutChangeEvent) => {
-    setWidth(event.nativeEvent.layout.width);
+  const onLayout = (event: any) => {
+    setContainerWidth(event.nativeEvent.layout.width);
   };
 
   const thumbAnimatedStyle = useAnimatedStyle(() => {
+    const thumbPosition = (isDragging.current ? currentValue.current : value) * containerWidth;
+    
     return {
-      width: thumbAnim.value,
-      height: thumbAnim.value,
-      borderRadius: thumbAnim.value / 2,
+      width: thumbSize.value,
+      height: thumbSize.value,
+      borderRadius: thumbSize.value / 2,
       transform: [
-        { translateX: -thumbAnim.value / 2 },
+        { translateX: thumbPosition - thumbSize.value / 2 },
       ],
     };
   });
 
+  const fillAnimatedStyle = useAnimatedStyle(() => {
+    const fillWidth = (isDragging.current ? currentValue.current : value) * containerWidth;
+    
+    return {
+      width: Math.max(0, fillWidth),
+    };
+  });
+
   return (
-    <View style={[styles.container, style]} {...panResponder.panHandlers} onLayout={onLayout}>
+    <View style={[styles.container, style]} onLayout={onLayout}>
       <View 
-        style={[
-          styles.track, 
-          { backgroundColor: maximumTrackTintColor }
-        ]}
-      />
-      <View 
-        style={[
-          styles.filledTrack, 
-          { 
-            backgroundColor: minimumTrackTintColor,
-            width: `${value * 100}%`,
-          }
-        ]}
-      />
-      <Animated.View 
-        style={[
-          styles.thumb, 
-          thumbAnimatedStyle,
-          { 
-            backgroundColor: thumbTintColor,
-            left: `${value * 100}%`,
-          }
-        ]}
-      />
+        style={[styles.track, { backgroundColor: maximumTrackTintColor }]}
+        {...panResponder.panHandlers}
+      >
+        <Animated.View 
+          style={[
+            styles.filledTrack, 
+            { backgroundColor: minimumTrackTintColor },
+            fillAnimatedStyle
+          ]}
+        />
+        <Animated.View 
+          style={[
+            styles.thumb, 
+            { backgroundColor: thumbTintColor },
+            thumbAnimatedStyle
+          ]}
+        />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: 20,
+    height: 40,
     justifyContent: 'center',
   },
   track: {
-    height: 3,
+    height: 4,
     borderRadius: 2,
+    position: 'relative',
   },
   filledTrack: {
     position: 'absolute',
-    height: 3,
+    height: 4,
     borderRadius: 2,
+    left: 0,
+    top: 0,
   },
   thumb: {
     position: 'absolute',
-    backgroundColor: '#fff',
+    top: -4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 3,
   },
 });
 
