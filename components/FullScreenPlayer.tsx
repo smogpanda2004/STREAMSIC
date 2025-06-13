@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { Play, Pause, SkipForward, SkipBack, Heart, Volume2, ListMusic, ChevronDown, Repeat, Shuffle, MoreHorizontal } from 'lucide-react-native';
+import { Play, Pause, SkipForward, SkipBack, Heart, Volume2, ListMusic, ChevronDown, Repeat, Shuffle, MoveHorizontal as MoreHorizontal } from 'lucide-react-native';
 import Animated, { useAnimatedStyle, withTiming, Easing, FadeIn, FadeOut, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';

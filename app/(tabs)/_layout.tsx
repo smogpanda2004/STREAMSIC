@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Platform, View } from 'react-native';
-import { Home, Library, Search, Settings } from 'lucide-react-native';
+import { Chrome as Home, Library, Search, Settings } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/Colors';
