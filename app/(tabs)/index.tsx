@@ -1,98 +1,100 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import AlbumCard from '@/components/AlbumCard';
 import TrackItem from '@/components/TrackItem';
 import SectionHeader from '@/components/SectionHeader';
 import MiniPlayer from '@/components/MiniPlayer';
 import FullScreenPlayer from '@/components/FullScreenPlayer';
+import HeroSection from '@/components/HeroSection';
 import Colors from '@/constants/Colors';
 
-// Mock data
+const { width } = Dimensions.get('window');
+
+// Enhanced mock data with more sophisticated content
+const featuredContent = {
+  id: 'featured-1',
+  title: 'Ethereal Nights',
+  artist: 'Neon Dreams',
+  description: 'A journey through ambient soundscapes',
+  coverUrl: 'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg',
+  gradient: ['#6B46C1', '#EC4899'],
+};
+
 const recentlyPlayed = [
   {
     id: '1',
-    title: 'After Hours',
-    artist: 'The Weeknd',
-    coverUrl: 'https://images.pexels.com/photos/1389429/pexels-photo-1389429.jpeg',
+    title: 'Midnight Reverie',
+    artist: 'Luna Eclipse',
+    coverUrl: 'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg',
   },
   {
     id: '2',
-    title: 'Future Nostalgia',
-    artist: 'Dua Lipa',
+    title: 'Digital Horizons',
+    artist: 'Cyber Collective',
     coverUrl: 'https://images.pexels.com/photos/3971985/pexels-photo-3971985.jpeg',
   },
   {
     id: '3',
-    title: 'Chromatica',
-    artist: 'Lady Gaga',
+    title: 'Neon Pulse',
+    artist: 'Synthwave Society',
     coverUrl: 'https://images.pexels.com/photos/1626481/pexels-photo-1626481.jpeg',
   },
   {
     id: '4',
-    title: 'Fine Line',
-    artist: 'Harry Styles',
+    title: 'Cosmic Drift',
+    artist: 'Stellar Sounds',
     coverUrl: 'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg',
   },
 ];
 
-const recommendedAlbums = [
+const curatedPlaylists = [
   {
     id: '5',
-    title: 'WHEN WE ALL FALL ASLEEP',
-    artist: 'Billie Eilish',
+    title: 'Abstract Emotions',
+    artist: 'Curated Collection',
     coverUrl: 'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg',
   },
   {
     id: '6',
-    title: 'Folklore',
-    artist: 'Taylor Swift',
+    title: 'Minimalist Moods',
+    artist: 'Essential Listening',
     coverUrl: 'https://images.pexels.com/photos/164821/pexels-photo-164821.jpeg',
   },
   {
     id: '7',
-    title: 'DAMN.',
-    artist: 'Kendrick Lamar',
+    title: 'Future Frequencies',
+    artist: 'Tomorrow\'s Sound',
     coverUrl: 'https://images.pexels.com/photos/3944091/pexels-photo-3944091.jpeg',
-  },
-  {
-    id: '8',
-    title: 'Plastic Beach',
-    artist: 'Gorillaz',
-    coverUrl: 'https://images.pexels.com/photos/2261/food-man-person-face.jpg',
   },
 ];
 
-const popularTracks = [
+const trendingNow = [
   {
     id: '9',
-    title: 'Blinding Lights',
-    artist: 'The Weeknd',
-    coverUrl: 'https://images.pexels.com/photos/1389429/pexels-photo-1389429.jpeg',
+    title: 'Quantum Entanglement',
+    artist: 'Physics & Poetry',
+    coverUrl: 'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg',
   },
   {
     id: '10',
-    title: 'Don\'t Start Now',
-    artist: 'Dua Lipa',
+    title: 'Binary Dreams',
+    artist: 'Digital Natives',
     coverUrl: 'https://images.pexels.com/photos/3971985/pexels-photo-3971985.jpeg',
   },
   {
     id: '11',
-    title: 'Watermelon Sugar',
-    artist: 'Harry Styles',
+    title: 'Holographic Love',
+    artist: 'Virtual Reality',
     coverUrl: 'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg',
   },
   {
     id: '12',
-    title: 'Rain On Me',
-    artist: 'Lady Gaga & Ariana Grande',
+    title: 'Neural Networks',
+    artist: 'AI Symphony',
     coverUrl: 'https://images.pexels.com/photos/1626481/pexels-photo-1626481.jpeg',
-  },
-  {
-    id: '13',
-    title: 'Bad Guy',
-    artist: 'Billie Eilish',
-    coverUrl: 'https://images.pexels.com/photos/1763075/pexels-photo-1763075.jpeg',
   },
 ];
 
@@ -102,63 +104,79 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      <LinearGradient
+        colors={Colors.gradientBackground}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <Text style={styles.greeting}>Good evening</Text>
-          <Text style={styles.userName}>John Doe</Text>
-        </View>
-        
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <SectionHeader title="Recently Played" onSeeAllPress={() => {}} />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollContent}
-          >
-            {recentlyPlayed.map((album) => (
-              <AlbumCard
-                key={album.id}
-                title={album.title}
-                artist={album.artist}
-                coverUrl={album.coverUrl}
-                onPress={() => {}}
-              />
-            ))}
-          </ScrollView>
+          <HeroSection content={featuredContent} />
           
-          <SectionHeader title="Recommended Albums" onSeeAllPress={() => {}} />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.horizontalScrollContent}
-          >
-            {recommendedAlbums.map((album) => (
-              <AlbumCard
-                key={album.id}
-                title={album.title}
-                artist={album.artist}
-                coverUrl={album.coverUrl}
-                onPress={() => {}}
-              />
-            ))}
-          </ScrollView>
-          
-          <SectionHeader title="Popular Tracks" onSeeAllPress={() => {}} />
-          <View style={styles.tracksList}>
-            {popularTracks.map((track, index) => (
-              <TrackItem
-                key={track.id}
-                title={track.title}
-                artist={track.artist}
-                coverUrl={track.coverUrl}
-                onPress={() => {}}
-                isPlaying={index === 0}
-              />
-            ))}
+          <View style={styles.contentContainer}>
+            <SectionHeader 
+              title="Recently Played" 
+              subtitle="Pick up where you left off"
+              onSeeAllPress={() => {}} 
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScrollContent}
+            >
+              {recentlyPlayed.map((album) => (
+                <AlbumCard
+                  key={album.id}
+                  title={album.title}
+                  artist={album.artist}
+                  coverUrl={album.coverUrl}
+                  onPress={() => {}}
+                />
+              ))}
+            </ScrollView>
+            
+            <SectionHeader 
+              title="Curated for You" 
+              subtitle="Handpicked collections"
+              onSeeAllPress={() => {}} 
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScrollContent}
+            >
+              {curatedPlaylists.map((album) => (
+                <AlbumCard
+                  key={album.id}
+                  title={album.title}
+                  artist={album.artist}
+                  coverUrl={album.coverUrl}
+                  onPress={() => {}}
+                />
+              ))}
+            </ScrollView>
+            
+            <SectionHeader 
+              title="Trending Now" 
+              subtitle="What's moving the world"
+              onSeeAllPress={() => {}} 
+            />
+            <View style={styles.tracksList}>
+              {trendingNow.map((track, index) => (
+                <TrackItem
+                  key={track.id}
+                  title={track.title}
+                  artist={track.artist}
+                  coverUrl={track.coverUrl}
+                  onPress={() => {}}
+                  isPlaying={index === 0}
+                />
+              ))}
+            </View>
           </View>
           
           <View style={styles.spacer} />
@@ -179,35 +197,23 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 10,
-  },
-  greeting: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
-    marginTop: 4,
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 150, // Extra space for mini player and tab bar
+    paddingBottom: 150,
+  },
+  contentContainer: {
+    paddingTop: 20,
   },
   horizontalScrollContent: {
-    paddingLeft: 16,
+    paddingLeft: 20,
     paddingRight: 8,
   },
   tracksList: {
-    marginTop: 12,
+    marginTop: 16,
   },
   spacer: {
-    height: 60,
+    height: 80,
   },
 });

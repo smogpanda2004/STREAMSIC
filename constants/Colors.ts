@@ -1,30 +1,51 @@
 const Colors = {
-  // Primary colors
-  primary: '#B3B3B3', // Matches logo's silver/gray
-  secondary: '#808080', // Darker gray for secondary elements
+  // Primary brand colors - refined silver/platinum palette
+  primary: '#E8E8E8', // Bright platinum
+  primaryDark: '#B8B8B8', // Medium platinum
+  secondary: '#A0A0A0', // Warm silver
+  accent: '#F5F5F5', // Near white accent
   
-  // Text colors
+  // Text hierarchy
   text: '#FFFFFF',
-  textSecondary: '#B3B3B3', // Matches logo color
-  muted: '#666666',
+  textPrimary: '#F8F8F8', // Slightly warmer white
+  textSecondary: '#C4C4C4', // Light silver
+  textTertiary: '#9A9A9A', // Medium silver
+  textMuted: '#707070', // Dark silver
   
-  // Background colors
-  background: '#121212', // Deep black matching logo background
-  card: '#1E1E1E',
-  elevated: '#282828',
+  // Background system - deep blacks with subtle variations
+  background: '#0A0A0A', // Pure deep black
+  backgroundElevated: '#141414', // Slightly elevated
+  surface: '#1A1A1A', // Surface level
+  surfaceElevated: '#242424', // Elevated surface
+  card: '#1E1E1E', // Card background
+  overlay: '#2A2A2A', // Overlay background
   
-  // Status colors
-  success: '#90A4AE', // Muted blue-gray
-  error: '#CF6679', // Muted red
-  warning: '#B0A091', // Muted amber
+  // Interactive states
+  interactive: '#E8E8E8', // Interactive elements
+  interactiveHover: '#F2F2F2', // Hover state
+  interactivePressed: '#D4D4D4', // Pressed state
+  interactiveDisabled: '#5A5A5A', // Disabled state
   
-  // Gradient colors
-  gradientStart: '#B3B3B3', // Matches logo
-  gradientEnd: '#808080', // Darker variant
+  // Status colors - muted and sophisticated
+  success: '#4ECDC4', // Teal success
+  warning: '#F7DC6F', // Warm yellow
+  error: '#E74C3C', // Refined red
+  info: '#5DADE2', // Soft blue
   
-  // Misc
-  border: '#333333',
-  overlay: 'rgba(0, 0, 0, 0.7)',
+  // Gradients
+  gradientPrimary: ['#E8E8E8', '#B8B8B8'],
+  gradientBackground: ['#0A0A0A', '#141414'],
+  gradientOverlay: ['rgba(10,10,10,0)', 'rgba(10,10,10,0.9)'],
+  
+  // Borders and dividers
+  border: '#2A2A2A',
+  borderLight: '#3A3A3A',
+  divider: '#1E1E1E',
+  
+  // Shadows and effects
+  shadow: 'rgba(0, 0, 0, 0.6)',
+  shadowLight: 'rgba(0, 0, 0, 0.3)',
+  glow: 'rgba(232, 232, 232, 0.1)',
 };
 
 export default Colors;

@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { MoveVertical as MoreVertical, Play } from 'lucide-react-native';
+import { MoreHorizontal, Play, Pause } from 'lucide-react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/Colors';
 
 interface TrackItemProps {
@@ -20,32 +22,61 @@ const TrackItem: React.FC<TrackItemProps> = ({
   onMorePress,
   isPlaying = false,
 }) => {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.98, { damping: 15 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15 });
+  };
+
   return (
     <TouchableOpacity 
-      style={[styles.container, isPlaying && styles.playingContainer]} 
       onPress={onPress}
-      activeOpacity={0.7}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={1}
     >
-      <Image source={{ uri: coverUrl }} style={styles.cover} />
-      
-      <View style={styles.textContainer}>
-        <Text style={[styles.title, isPlaying && styles.playingText]} numberOfLines={1}>
-          {title}
-        </Text>
-        <Text style={styles.artist} numberOfLines={1}>
-          {artist}
-        </Text>
-      </View>
-      
-      {isPlaying && (
-        <View style={styles.playingIndicator}>
-          <Play size={14} color={Colors.primary} fill={Colors.primary} />
+      <Animated.View style={[styles.container, animatedStyle]}>
+        {isPlaying && (
+          <LinearGradient
+            colors={[Colors.glow, 'transparent']}
+            style={styles.playingGlow}
+          />
+        )}
+        
+        <View style={styles.coverContainer}>
+          <Image source={{ uri: coverUrl }} style={styles.cover} />
+          {isPlaying && (
+            <View style={styles.playingOverlay}>
+              <View style={styles.playingIndicator}>
+                <Pause size={12} color={Colors.background} fill={Colors.background} />
+              </View>
+            </View>
+          )}
         </View>
-      )}
-      
-      <TouchableOpacity style={styles.moreButton} onPress={onMorePress}>
-        <MoreVertical size={20} color={Colors.textSecondary} />
-      </TouchableOpacity>
+        
+        <View style={styles.textContainer}>
+          <Text style={[styles.title, isPlaying && styles.playingText]} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={styles.artist} numberOfLines={1}>
+            {artist}
+          </Text>
+        </View>
+        
+        <TouchableOpacity style={styles.moreButton} onPress={onMorePress}>
+          <MoreHorizontal size={18} color={Colors.textTertiary} />
+        </TouchableOpacity>
+      </Animated.View>
     </TouchableOpacity>
   );
 };
@@ -54,27 +85,56 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    position: 'relative',
   },
-  playingContainer: {
-    backgroundColor: Colors.elevated,
+  playingGlow: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    borderRadius: 12,
+  },
+  coverContainer: {
+    position: 'relative',
+    marginRight: 16,
   },
   cover: {
-    width: 50,
-    height: 50,
-    borderRadius: 4,
-    marginRight: 12,
+    width: 52,
+    height: 52,
+    borderRadius: 8,
+    backgroundColor: Colors.surface,
+  },
+  playingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderRadius: 8,
+  },
+  playingIndicator: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   textContainer: {
     flex: 1,
   },
   title: {
     color: Colors.text,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '500',
-    marginBottom: 3,
+    marginBottom: 4,
+    letterSpacing: -0.1,
   },
   playingText: {
     color: Colors.primary,
@@ -82,13 +142,12 @@ const styles = StyleSheet.create({
   },
   artist: {
     color: Colors.textSecondary,
-    fontSize: 13,
-  },
-  playingIndicator: {
-    marginRight: 8,
+    fontSize: 14,
+    fontWeight: '400',
   },
   moreButton: {
-    padding: 10,
+    padding: 12,
+    marginRight: -8,
   },
 });
 

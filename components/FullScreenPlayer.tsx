@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions, Pressable } from 'react-native';
-import { Play, Pause, SkipForward, SkipBack, Heart, Volume2, ListMusic, ChevronDown, Repeat, Shuffle } from 'lucide-react-native';
-import Animated, { useAnimatedStyle, withTiming, Easing, FadeIn, FadeOut } from 'react-native-reanimated';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { Play, Pause, SkipForward, SkipBack, Heart, Volume2, ListMusic, ChevronDown, Repeat, Shuffle, MoreHorizontal } from 'lucide-react-native';
+import Animated, { useAnimatedStyle, withTiming, Easing, FadeIn, FadeOut, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Slider from '@/components/ui/Slider';
@@ -14,30 +14,17 @@ interface FullScreenPlayerProps {
 }
 
 const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
-  const [progress, setProgress] = useState(0.3); // 0 to 1
-  const [volume, setVolume] = useState(0.8); // 0 to 1
-  const [isSeekingProgress, setIsSeekingProgress] = useState(false);
-  const [isSeekingVolume, setIsSeekingVolume] = useState(false);
+  const [progress, setProgress] = useState(0.35);
+  const [volume, setVolume] = useState(0.8);
 
-  const togglePlay = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
-
-  const toggleRepeat = () => {
-    setIsRepeat(!isRepeat);
-  };
-
-  const toggleShuffle = () => {
-    setIsShuffle(!isShuffle);
-  };
+  const togglePlay = () => setIsPlaying(!isPlaying);
+  const toggleFavorite = () => setIsFavorite(!isFavorite);
+  const toggleRepeat = () => setIsRepeat(!isRepeat);
+  const toggleShuffle = () => setIsShuffle(!isShuffle);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -45,87 +32,79 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const totalDuration = 237; // 3:57 in seconds
+  const totalDuration = 247; // 4:07 in seconds
   const currentTime = totalDuration * progress;
 
   const handleProgressChange = (value: number) => {
     setProgress(value);
-    // In a real app, you would seek to this position in the audio
     console.log('Seeking to:', formatTime(totalDuration * value));
   };
 
   const handleVolumeChange = (value: number) => {
     setVolume(value);
-    // In a real app, you would set the audio volume
     console.log('Volume changed to:', Math.round(value * 100) + '%');
   };
-
-  const handleProgressSlidingStart = () => {
-    setIsSeekingProgress(true);
-    // In a real app, you might pause playback during seeking
-  };
-
-  const handleProgressSlidingComplete = () => {
-    setIsSeekingProgress(false);
-    // In a real app, you would resume playback and seek to the new position
-  };
-
-  const handleVolumeSlidingStart = () => {
-    setIsSeekingVolume(true);
-  };
-
-  const handleVolumeSlidingComplete = () => {
-    setIsSeekingVolume(false);
-  };
-
-  const animatedIconStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { 
-          scale: withTiming(isPlaying ? 1 : 0.9, { 
-            duration: 150, 
-            easing: Easing.bezier(0.25, 0.1, 0.25, 1) 
-          }) 
-        }
-      ],
-    };
-  });
 
   return (
     <Animated.View 
       style={styles.container}
-      entering={FadeIn.duration(300)}
-      exiting={FadeOut.duration(300)}
+      entering={SlideInUp.duration(400)}
+      exiting={SlideOutDown.duration(300)}
     >
       <LinearGradient
-        colors={['rgba(0,0,0,0.8)', Colors.background]}
+        colors={['#2D1B69', '#0A0A0A']}
         style={StyleSheet.absoluteFillObject}
       />
       
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+      <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFillObject} />
+      
+      {/* Header */}
+      <Animated.View 
+        style={styles.header}
+        entering={FadeIn.delay(200)}
+      >
+        <TouchableOpacity onPress={onClose} style={styles.headerButton}>
           <ChevronDown size={24} color={Colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Now Playing</Text>
-        <TouchableOpacity style={styles.queueButton}>
-          <ListMusic size={20} color={Colors.text} />
+        
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>Now Playing</Text>
+          <Text style={styles.headerSubtitle}>from Ethereal Nights</Text>
+        </View>
+        
+        <TouchableOpacity style={styles.headerButton}>
+          <MoreHorizontal size={20} color={Colors.text} />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
-      <View style={styles.albumContainer}>
-        <Image
-          source={{ uri: 'https://images.pexels.com/photos/1389429/pexels-photo-1389429.jpeg' }}
-          style={styles.albumArt}
-        />
-      </View>
+      {/* Album Art */}
+      <Animated.View 
+        style={styles.albumContainer}
+        entering={FadeIn.delay(400).duration(800)}
+      >
+        <View style={styles.albumArtWrapper}>
+          <Image
+            source={{ uri: 'https://images.pexels.com/photos/2747449/pexels-photo-2747449.jpeg' }}
+            style={styles.albumArt}
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.3)']}
+            style={styles.albumOverlay}
+          />
+        </View>
+      </Animated.View>
 
-      <View style={styles.infoContainer}>
+      {/* Track Info */}
+      <Animated.View 
+        style={styles.infoContainer}
+        entering={FadeIn.delay(600).duration(800)}
+      >
         <View style={styles.titleRow}>
           <View style={styles.titleContainer}>
-            <Text style={styles.songTitle}>Midnight City</Text>
-            <Text style={styles.artistName}>M83</Text>
+            <Text style={styles.songTitle}>Quantum Entanglement</Text>
+            <Text style={styles.artistName}>Physics & Poetry</Text>
           </View>
-          <TouchableOpacity onPress={toggleFavorite}>
+          <TouchableOpacity onPress={toggleFavorite} style={styles.favoriteButton}>
             <Heart
               size={24}
               color={isFavorite ? Colors.error : Colors.textSecondary}
@@ -134,12 +113,11 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
           </TouchableOpacity>
         </View>
 
+        {/* Progress */}
         <View style={styles.progressContainer}>
           <Slider
             value={progress}
             onValueChange={handleProgressChange}
-            onSlidingStart={handleProgressSlidingStart}
-            onSlidingComplete={handleProgressSlidingComplete}
             minimumTrackTintColor={Colors.primary}
             maximumTrackTintColor={Colors.border}
             thumbTintColor={Colors.text}
@@ -151,47 +129,50 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
           </View>
         </View>
 
+        {/* Controls */}
         <View style={styles.controlsContainer}>
           <TouchableOpacity onPress={toggleShuffle} style={styles.secondaryButton}>
             <Shuffle 
               size={20} 
-              color={isShuffle ? Colors.primary : Colors.textSecondary} 
+              color={isShuffle ? Colors.primary : Colors.textTertiary} 
             />
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.controlButton}>
-            <SkipBack size={24} color={Colors.text} />
+            <SkipBack size={28} color={Colors.text} />
           </TouchableOpacity>
           
           <TouchableOpacity onPress={togglePlay} style={styles.playButton}>
-            <Animated.View style={animatedIconStyle}>
+            <LinearGradient
+              colors={Colors.gradientPrimary}
+              style={styles.playButtonGradient}
+            >
               {isPlaying ? (
-                <Pause size={28} color={Colors.text} />
+                <Pause size={32} color={Colors.background} />
               ) : (
-                <Play size={28} color={Colors.text} fill={Colors.text} />
+                <Play size={32} color={Colors.background} fill={Colors.background} />
               )}
-            </Animated.View>
+            </LinearGradient>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.controlButton}>
-            <SkipForward size={24} color={Colors.text} />
+            <SkipForward size={28} color={Colors.text} />
           </TouchableOpacity>
           
           <TouchableOpacity onPress={toggleRepeat} style={styles.secondaryButton}>
             <Repeat 
               size={20} 
-              color={isRepeat ? Colors.primary : Colors.textSecondary} 
+              color={isRepeat ? Colors.primary : Colors.textTertiary} 
             />
           </TouchableOpacity>
         </View>
 
+        {/* Volume */}
         <View style={styles.volumeContainer}>
           <Volume2 size={18} color={Colors.textSecondary} />
           <Slider
             value={volume}
             onValueChange={handleVolumeChange}
-            onSlidingStart={handleVolumeSlidingStart}
-            onSlidingComplete={handleVolumeSlidingComplete}
             minimumTrackTintColor={Colors.primary}
             maximumTrackTintColor={Colors.border}
             thumbTintColor={Colors.text}
@@ -199,7 +180,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ onClose }) => {
           />
           <Text style={styles.volumeText}>{Math.round(volume * 100)}%</Text>
         </View>
-      </View>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -219,45 +200,69 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 60,
     paddingBottom: 20,
   },
-  closeButton: {
-    padding: 8,
+  headerButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.surfaceElevated,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerCenter: {
+    alignItems: 'center',
   },
   headerTitle: {
     color: Colors.text,
     fontSize: 16,
     fontWeight: '600',
   },
-  queueButton: {
-    padding: 8,
+  headerSubtitle: {
+    color: Colors.textTertiary,
+    fontSize: 12,
+    marginTop: 2,
   },
   albumContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 40,
-    marginBottom: 30,
+    marginBottom: 40,
+    flex: 1,
+  },
+  albumArtWrapper: {
+    position: 'relative',
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.6,
+    shadowRadius: 30,
+    elevation: 20,
   },
   albumArt: {
     width: width - 80,
     height: width - 80,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 15,
-    elevation: 10,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
+  },
+  albumOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   infoContainer: {
-    paddingHorizontal: 30,
-    flex: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+    alignItems: 'flex-start',
+    marginBottom: 32,
   },
   titleContainer: {
     flex: 1,
@@ -265,29 +270,39 @@ const styles = StyleSheet.create({
   },
   songTitle: {
     color: Colors.text,
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: -0.5,
   },
   artistName: {
     color: Colors.textSecondary,
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '400',
+  },
+  favoriteButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.surfaceElevated,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   progressContainer: {
-    marginBottom: 30,
+    marginBottom: 40,
   },
   progressSlider: {
-    marginHorizontal: -10, // Extend touch area
+    marginHorizontal: -10,
   },
   timeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop: 12,
     paddingHorizontal: 4,
   },
   timeText: {
     color: Colors.textSecondary,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
   },
   controlsContainer: {
@@ -298,39 +313,44 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   secondaryButton: {
-    padding: 10,
-  },
-  controlButton: {
-    padding: 10,
-  },
-  playButton: {
-    backgroundColor: Colors.secondary,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.surfaceElevated,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+  },
+  controlButton: {
+    padding: 12,
+  },
+  playButton: {
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  playButtonGradient: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   volumeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
     paddingHorizontal: 4,
   },
   volumeSlider: {
     flex: 1,
-    marginHorizontal: 12,
+    marginHorizontal: 16,
   },
   volumeText: {
     color: Colors.textSecondary,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
-    minWidth: 35,
+    minWidth: 40,
     textAlign: 'right',
   },
 });
